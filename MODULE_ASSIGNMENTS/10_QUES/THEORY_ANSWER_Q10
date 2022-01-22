@@ -1,0 +1,5 @@
+QUESTION:
+        10. Draw a process or task state diagram for the RTOS you are using.
+
+ANSWER:
+        Answer in the README file.

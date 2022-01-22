@@ -1,0 +1,7 @@
+QUESTION:
+
+        7. What is the scheduling algorithm used by your RTOS?
+
+ANSWER:
+
+        priority-based preemptive scheduling

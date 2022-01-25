@@ -3,59 +3,43 @@
 #include <freertos/task.h>
 #include <driver/gpio.h>
 #include <freertos/event_groups.h>
-
-EventGroupHandle_t sensor;
+static portMUX_TYPE mux;
 TaskHandle_t xHandle_1;
 TaskHandle_t xHandle_2;
-
-const uint32_t first_bit=(1<<0);
-const uint32_t all_bit=first_bit;
-
+uint32_t resource=0;
 void Alarmtask_1(void *pvparameters)
 {
-    uint32_t result;
-    
-       
-    printf("ALARM TASK  RUNNING\n");
-    taskENTER_CRITICAL();
+    while(1)
     {
-        printf("I am in critical section\n");
-        result = xEventGroupWaitBits(sensor,all_bit,pdTRUE,pdTRUE,pdMS_TO_TICKS(5000));
-        printf("BIT OUT%d\n",result);
+        printf("ALARM TASK  RUNNING\n");
+        taskENTER_CRITICAL(&mux);
+    
+        resource++;
+        taskEXIT_CRITICAL(&mux);
+        printf("RESORCE %d\n",resource);
+        vTaskDelay(1000/ portTICK_PERIOD_MS);
     }
-    taskEXIT_CRITICAL();
-    //vTaskDelay(1000/ portTICK_PERIOD_MS);
-    
-
-    
 }
 void Delaytask_1(void *pv)
 {
-    int count =0;
+    uint32_t count=0;
     while(1)
     {
         count++;
-        printf("DALEY TASK RUNNING\n");
-        if(count==3)
-        {
-            xEventGroupSetBits(sensor,first_bit);
-        } 
+        printf("DALEY TASK RUNNING :%d\n",count);
+        vTaskDelay(1000/portTICK_PERIOD_MS);
     }
 }
 void app_main()
 {
-    sensor =xEventGroupCreate();
+    vPortCPUInitializeMutex(&mux);
     BaseType_t result;
-    
-    
     result=xTaskCreate(Alarmtask_1,"Alarmtask_1",2048,NULL,5,&xHandle_1);
-
     if(result==pdPASS)
     {
         printf("Alarmtask created\n");
     }
     result=xTaskCreate(Delaytask_1,"Delaytask_1",2048,NULL,5,&xHandle_2);
-
     if(result==pdPASS)
     {
         printf("Alarmtask created\n");

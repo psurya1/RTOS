@@ -3,11 +3,15 @@
 #include <freertos/task.h>
 #include <driver/gpio.h>
 
+volatile TickType_t x;
+
 void sensortask_1(void *pvparameters)
 {
     while(1)
     {
         printf("SENSOR TASK  1 RUNNING\n");
+        x=xTaskGetTickCount();
+        printf("TICK :%d\n",x);
         vTaskDelay(100/ portTICK_PERIOD_MS);  
     }
 }
@@ -87,14 +91,14 @@ void sensortask_10(void *pvparameters)
 
 void app_main()
 {
-    xTaskCreate(sensortask_1,"sensortask_1",1024,NULL,5,NULL);
-    xTaskCreate(sensortask_2,"sensortask_2",1024,NULL,5,NULL);
-    xTaskCreate(sensortask_3,"sensortask_3",1024,NULL,5,NULL);
-    xTaskCreate(sensortask_4,"sensortask_4",1024,NULL,5,NULL);
-    xTaskCreate(sensortask_5,"sensortask_5",1024,NULL,5,NULL);
-    xTaskCreate(sensortask_6,"sensortask_6",1024,NULL,5,NULL);
-    xTaskCreate(sensortask_7,"sensortask_7",1024,NULL,5,NULL);
-    xTaskCreate(sensortask_8,"sensortask_8",1024,NULL,5,NULL);
-    xTaskCreate(sensortask_9,"sensortask_9",1024,NULL,5,NULL);
-    xTaskCreate(sensortask_10,"sensortask_10",1024,NULL,5,NULL);
+    xTaskCreate(sensortask_1,"sensortask_1",2048,NULL,5,NULL);
+    xTaskCreate(sensortask_2,"sensortask_2",2048,NULL,5,NULL);
+    xTaskCreate(sensortask_3,"sensortask_3",2048,NULL,5,NULL);
+    xTaskCreate(sensortask_4,"sensortask_4",2048,NULL,5,NULL);
+    xTaskCreate(sensortask_5,"sensortask_5",2048,NULL,5,NULL);
+    xTaskCreate(sensortask_6,"sensortask_6",2048,NULL,5,NULL);
+    xTaskCreate(sensortask_7,"sensortask_7",2048,NULL,5,NULL);
+    xTaskCreate(sensortask_8,"sensortask_8",2048,NULL,5,NULL);
+    xTaskCreate(sensortask_9,"sensortask_9",2048,NULL,5,NULL);
+    xTaskCreate(sensortask_10,"sensortask_10",2048,NULL,5,NULL);
 }

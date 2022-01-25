@@ -6,50 +6,36 @@
 
 //when other task are not running the idle task will run...
 
-
+volatile uint32_t ulIdleCycleCount = 0;
 TaskHandle_t xHandle_1;
 TaskHandle_t xHandle_2;
 
-const uint32_t first_bit=(1 << 0);
-const uint32_t second_bit=(1 << 1);
-const uint32_t all_bit=(first_bit | second_bit);
-EventGroupHandle_t x;
-
 void sensortask_1(void *pvparameters)
 {
-    int sensor_data=0;
     while(1)
     {
-        sensor_data++;
-        printf("SENSOR TASK  RUNNING: %d\n",sensor_data);
-        vTaskDelay(1000/ portTICK_PERIOD_MS);
-        if(sensor_data==5)
-        {
-            vTaskDelete(NULL);
-            xEventGroupSetBits(x,first_bit);
-        }
-        
+        printf("SENSOR TASK  RUNNING \n");
+        printf("SPARE TIME :%ld\n",ulIdleCycleCount);
+        vTaskDelay(250/ portTICK_PERIOD_MS);
         
     }
 }
 void Alarmtask_1(void *pvparameters)
-{
-    int alarm_data=0; 
+{ 
     while(1)
     {
-        alarm_data++;
-        printf("ALARM DATA %d\n",alarm_data);
-        vTaskDelay(1000/ portTICK_PERIOD_MS);
-        if(alarm_data==5)
-        {
-            vTaskDelete(NULL);
-            xEventGroupSetBits(x,second_bit);
-        }
+        printf("ALARM TASK RUNNING \n");
+        printf("SPARE TIME :%ld\n",ulIdleCycleCount);
+        vTaskDelay(250/ portTICK_PERIOD_MS);
+        
     }
+}
+void idletask(void *pv)                                              //idle task
+{
+    ulIdleCycleCount++;
 }
 void app_main()
 {
-    x=xEventGroupCreate();
     BaseType_t result;
     
     
@@ -65,12 +51,6 @@ void app_main()
     {
         printf("Alarmtask created\n");
     }
-    EventBits_t great;
-    great = xEventGroupWaitBits(x,all_bit,pdTRUE,pdTRUE,pdMS_TO_TICKS(5000));
-    printf("EVENT  %d\n",great);
-    while(1)
-    {
-        printf("IDLE TASK\n");
-        vTaskDelay(1000/portTICK_PERIOD_MS);
-    }
+    result=xTaskCreate(idletask,"idletask",2048,NULL,0,NULL);
+    
 }

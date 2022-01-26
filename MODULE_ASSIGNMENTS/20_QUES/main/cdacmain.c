@@ -2,58 +2,60 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <driver/gpio.h>
-#include <freertos/semphr.h>
 
+#define LED_BUTTON 4
+#define LED 2
+TaskHandle_t ISR;
+TaskHandle_t ISR_2;
 
-SemaphoreHandle_t sem;
-TaskHandle_t xHandle_1;
-TaskHandle_t xHandle_2;
-
-
-void sensortask_1(void *pvparameters)
+uint32_t gpio_val=0;
+void gpio_button_handler(void *pv)
 {
-    int sensor_data=0;
-    while(1)
-    {
-        sensor_data++;
-        printf("SENSOR TASK  RUNNING \n");
-        vTaskDelay(1000/ portTICK_PERIOD_MS);
-        if(sensor_data==10)
-        {
-            xSemaphoreGive(sem);
-            vTaskDelay(1000/ portTICK_PERIOD_MS);
-            sensor_data=0;
-        }
-        
-    }
+    BaseType_t xYieldRequired;
+    gpio_val=(gpio_val== 0 ? 1:0);
+    gpio_set_level(LED,gpio_val);
+    xYieldRequired = xTaskResumeFromISR(ISR_2);
+    portYIELD_FROM_ISR( xYieldRequired );
 }
-void Alarmtask_1(void *pvparameters)
+
+void isrtask(void *pv)
 {
-    int rece_data=50; 
     while(1)
     {
-        //rece_data++;
-        xSemaphoreTake(sem,portMAX_DELAY);
-        printf("ALARM TASK \n");
-        vTaskDelay(1000/ portTICK_PERIOD_MS);
+        vTaskSuspend(NULL);
+        printf("task released by interrupt\n");
+        printf("its working\n");
+        vTaskDelay(1000/portTICK_PERIOD_MS);
+    }
+   
+}
+void buttontask(void *pv)
+{
+    uint32_t button_val;
+    for(;;)
+    {
+        button_val=gpio_get_level(LED_BUTTON);
+        printf("BUTTON PRESSED :%d\n",button_val);
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
 void app_main()
 {
-    sem=xSemaphoreCreateBinary();
-    BaseType_t result;
+    esp_rom_gpio_pad_select_gpio(LED_BUTTON);
+    esp_rom_gpio_pad_select_gpio(LED);
+    //gpio_reset_pin(LED_BUTTON);
+    gpio_set_direction(LED_BUTTON,GPIO_MODE_INPUT);
+    //gpio_reset_pin(LED);
+    gpio_set_direction(LED,GPIO_MODE_OUTPUT);
+    //define interrupt trigger type
+    //negedge by default 1->0
     
-    result=xTaskCreate(sensortask_1,"sensortask_1",2048,NULL,5,&xHandle_1);
-
-    if(result==pdPASS)
-    {
-        printf("sensortask created\n");
-    }
-    result=xTaskCreate(Alarmtask_1,"Alarmtask_1",2048,NULL,5,&xHandle_2);
-
-    if(result==pdPASS)
-    {
-        printf("Alarmtask created\n");
-    }
-    xSemaphoreTake(sem,portMAX_DELAY);
+    gpio_intr_enable(LED_BUTTON);
+    gpio_set_intr_type(LED_BUTTON,GPIO_INTR_ANYEDGE);
+    gpio_install_isr_service(ESP_INTR_FLAG_EDGE);
+    
+    gpio_isr_handler_add(LED_BUTTON,gpio_button_handler,0);
+    
+    xTaskCreate(buttontask,"buttontask",4096,NULL,5,&ISR);
+    xTaskCreate(isrtask,"isr_task",2048,NULL,10,&ISR_2);
 }

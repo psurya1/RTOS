@@ -12,11 +12,11 @@ TaskHandle_t xHandle_1;
 TaskHandle_t xHandle_2;
 uint32_t button_val;
 
-void sensortask_1(void *pvparameters)
+void sensortask_1(void *pvparameters)                            //ISR 
 {
     button_val=gpio_get_level(BUTTON);
     //printf("BUTTON PRESSED :%d\n",button_val);
-    xQueueSendFromISR(queue,&button_val,NULL);
+    xQueueSendFromISR(queue,&button_val,NULL);                   //QUEUE FROM ISR       
 }
 void Alarmtask_1(void *pvparameters)
 {

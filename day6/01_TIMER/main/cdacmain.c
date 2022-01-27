@@ -11,7 +11,7 @@ void TurnMotorOFF(TimerHandle_t xTimer)
     printf("Turning motor off!\n");
     if(count==5)
     {
-        xTimerStop(xTimer,0);
+        xTimerStop(NULL,0);
     }
 }
 void app_main()

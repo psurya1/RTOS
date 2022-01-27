@@ -9,6 +9,7 @@ uint32_t ulIdleCycleCount = 0;
 TaskHandle_t xHandle_1;
 TaskHandle_t xHandle_2;
 TaskHandle_t xHandle_3;
+//#define vApplicationIdleHook esp_vApplicationIdleHook
 
 void sensortask_1(void *pvparameters)
 {
@@ -38,12 +39,12 @@ void Alarmtask_1(void *pvparameters)
         vTaskDelay(1000/ portTICK_PERIOD_MS);
     }
 }
-void idletask(void *pv)                                              //idle task
+void vApplicationIdleHook_1( void)                                              //idle task
 {
     while(1)
     {
         ulIdleCycleCount++;
-        vTaskDelay(1000/portTICK_PERIOD_MS);
+        //vTaskDelay(1000/portTICK_PERIOD_MS);
     }
     
 }
@@ -52,7 +53,7 @@ void app_main()
     BaseType_t foridle; 
     BaseType_t result;
     
-    foridle=xTaskCreatePinnedToCore(idletask,"idle_task",4096,NULL,0,&xHandle_3,0);   //idle task created and pin to cpu core 0
+    foridle=xTaskCreatePinnedToCore(vApplicationIdleHook_1,"idle_task",4096,NULL,0,&xHandle_3,0);   //idle task created and pin to cpu core 0
     if(foridle==pdPASS)
     {
         printf("idle task created and added to cpu core 0\n");
